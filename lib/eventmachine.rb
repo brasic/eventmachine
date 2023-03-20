@@ -538,12 +538,25 @@ module EventMachine
   end
 
   # Attach to an existing socket's file descriptor. The socket may have been
-  # started with {EventMachine.start_server}.
+  # started with {EventMachine.start_server} or {EventMachine.open_datagram_socket}.
   def self.attach_server sock, handler=nil, *args, &block
     klass = klass_from_handler(Connection, handler, *args)
     sd = sock.respond_to?(:fileno) ? sock.fileno : sock
-    s = attach_sd(sd)
-    @acceptors[s] = [klass,args,block,sock]
+    is_udp = (
+      sock.respond_to?(:getsockopt) &&
+      sock.getsockopt(Socket::SOL_SOCKET, Socket::SO_TYPE).int == Socket::SOCK_DGRAM
+    )
+    s = nil
+    if is_udp
+      s = attach_datagram_socket(sd)
+      @conns[s] = klass.new sd, *args
+    #c.instance_variable_set(:@io, io)
+    #c.instance_variable_set(:@watch_mode, watch_mode)
+    #c.instance_variable_set(:@fd, fd)
+    else
+      s = attach_sd(sd)
+      @acceptors[s] = [klass,args,block,sock]
+    end
     s
   end
 

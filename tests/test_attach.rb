@@ -8,6 +8,13 @@ class TestAttach < Test::Unit::TestCase
     end
   end
 
+  class UDPServer < EM::Connection
+    def receive_data data
+      port, ip = Socket.unpack_sockaddr_in(get_peername)
+      $received_data << "from(port=#{port},ip:#{ip}):#{data}"
+    end
+  end
+
   class EchoClient < EM::Connection
     def initialize socket
       self.notify_readable = true
@@ -97,6 +104,22 @@ class TestAttach < Test::Unit::TestCase
     }
 
     assert_equal $read, "ghi\n"
+  end
+
+  def test_attach_udp_socket
+    omit_if(jruby?)
+    $before = UDPSocket.new
+    $before.bind("127.0.0.1", @port)
+    sig     = nil
+    EM.run {
+      sig = EM.attach_server $before, UDPServer
+      UDPSocket.new.send("sample UDP payload", 0, "127.0.0.1", @port)
+      EM.add_timer(0.1) { EM.stop }
+    }
+
+    assert_equal false, $before.closed?
+    assert_equal "sample UDP payload", $received_data
+    assert sig.is_a?(Integer)
   end
 
   def test_set_readable

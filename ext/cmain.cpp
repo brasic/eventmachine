@@ -309,6 +309,16 @@ extern "C" const uintptr_t evma_attach_sd (int sd)
 	return EventMachine->AttachSD (sd);
 }
 
+/***************************
+evma_attach_datagram_socket
+***************************/
+
+extern "C" const uintptr_t evma_attach_datagram_socket (int sd)
+{
+	ensure_eventmachine("evma_attach_datagram_socket");
+	return EventMachine->AttachDatagramSocket (sd);
+}
+
 /*************************
 evma_open_datagram_socket
 *************************/

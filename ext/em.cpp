@@ -1636,22 +1636,10 @@ const uintptr_t EventMachine_t::OpenDatagramSocket (const char *address, int por
 			goto fail;
 	}
 
-	// Set the new socket nonblocking.
-	if (!SetSocketNonblocking (sd))
-		goto fail;
-
 	if (bind (sd, (struct sockaddr *)&bind_here, bind_here_len) != 0)
 		goto fail;
 
-	{ // Looking good.
-		DatagramDescriptor *ds = new DatagramDescriptor (sd, this);
-		if (!ds)
-			throw std::runtime_error ("unable to allocate datagram-socket");
-		Add (ds);
-		output_binding = ds->GetBinding();
-	}
-
-	return output_binding;
+	return AttachDatagramSocket(sd);
 
 	fail:
 	if (sd != INVALID_SOCKET)
@@ -1983,6 +1971,29 @@ const uintptr_t EventMachine_t::AttachSD (SOCKET sd_accept)
 	if (sd_accept != INVALID_SOCKET)
 		close (sd_accept);
 	return 0;
+}
+
+/**************************************
+EventMachine_t::AttachDatagramSocket
+**************************************/
+
+const uintptr_t EventMachine_t::AttachDatagramSocket (SOCKET sd)
+{
+	{
+		if (!SetSocketNonblocking (sd)) {
+			if (sd != INVALID_SOCKET) {
+				close (sd);
+			}
+			return 0;
+		}
+	}
+
+	// Looking good.
+	DatagramDescriptor *ds = new DatagramDescriptor (sd, this);
+	if (!ds)
+		throw std::runtime_error ("unable to allocate datagram-socket");
+	Add (ds);
+	return ds->GetBinding();
 }
 
 

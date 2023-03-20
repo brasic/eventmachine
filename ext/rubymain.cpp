@@ -344,6 +344,18 @@ static VALUE t_attach_sd(VALUE self UNUSED, VALUE sd)
 	return BSIG2NUM (f);
 }
 
+/************************
+t_attach_datagram_socket
+************************/
+
+static VALUE t_attach_datagram_socket(VALUE self UNUSED, VALUE sd)
+{
+	const uintptr_t f = evma_attach_datagram_socket(FIX2INT(sd));
+	if (!f)
+		rb_raise (rb_eRuntimeError, "%s", "no socket");
+	return BSIG2NUM (f);
+}
+
 
 /***********
 t_send_data
@@ -1504,6 +1516,7 @@ extern "C" void Init_rubyeventmachine()
 	rb_define_module_function (EmModule, "stop_tcp_server", (VALUE(*)(...))t_stop_server, 1);
 	rb_define_module_function (EmModule, "start_unix_server", (VALUE(*)(...))t_start_unix_server, 1);
 	rb_define_module_function (EmModule, "attach_sd", (VALUE(*)(...))t_attach_sd, 1);
+	rb_define_module_function (EmModule, "attach_datagram_socket", (VALUE(*)(...))t_attach_datagram_socket, 1);
 	rb_define_module_function (EmModule, "set_tls_parms", (VALUE(*)(...))t_set_tls_parms, 13);
 	rb_define_module_function (EmModule, "start_tls", (VALUE(*)(...))t_start_tls, 1);
 	rb_define_module_function (EmModule, "get_peer_cert", (VALUE(*)(...))t_get_peer_cert, 1);

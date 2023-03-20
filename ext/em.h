@@ -109,6 +109,7 @@ class EventMachine_t
 		const uintptr_t OpenDatagramSocket (const char *, int);
 		const uintptr_t CreateUnixDomainServer (const char*);
 		const uintptr_t AttachSD (SOCKET);
+		const uintptr_t AttachDatagramSocket(SOCKET);
 		const uintptr_t OpenKeyboard();
 		//const char *Popen (const char*, const char*);
 		const uintptr_t Socketpair (char* const*);
